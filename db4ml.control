@@ -1,0 +1,3 @@
+default_version = '0.1'
+comment = 'db4ml minimal train/predict'
+relocatable = true
