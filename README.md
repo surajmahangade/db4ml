@@ -243,3 +243,38 @@ RETURNS double precision
 AS 'db4ml', 'db4ml_predict_linear'
 LANGUAGE C STABLE STRICT PARALLEL SAFE;
 ```
+
+
+# Load both datasets into PostgreSQL
+psql -U dev -d dev -f /src/db4ml/sql/load_data.sql
+
+# Run the complete training and testing script
+psql -U dev -d dev -f /src/db4ml/sql/test_models.sql
+```
+
+This will:
+- Train a model on the housing dataset
+- Train a model on the salary dataset
+- Display model performance metrics (R² scores)
+- Make sample predictions
+- Show the learned model parameters (intercept and weights)
+
+## Expected Output
+
+After running `test_models.sql`, you should see:
+```
+=== Training Housing Model ===
+ housing_model_id 
+------------------
+                1
+
+=== Training Salary Model ===
+ salary_model_id 
+-----------------
+               2
+
+=== Model Performance Metrics ===
+ model_id | kind   | n_features | train_rows | test_rows | train_r2 | test_r2
+----------+--------+------------+------------+-----------+----------+---------
+        2 | linear |          1 |         22 |         8 |   0.8815 |  0.5377
+        1 | linear |          7 |        404 |       102 |   0.6971 | -0.0433
