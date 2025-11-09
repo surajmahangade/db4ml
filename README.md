@@ -248,8 +248,9 @@ LANGUAGE C STABLE STRICT PARALLEL SAFE;
 # Load both datasets into PostgreSQL
 psql -U dev -d dev -f /src/db4ml/sql/load_data.sql
 
-# Run the complete training and testing script
-psql -U dev -d dev -f /src/db4ml/sql/test_models.sql
+# Shuffle the Dataset so that the model is trained well
+psql -U dev -d dev -f /src/db4ml/sql/shuffled_data.sql
+
 ```
 
 This will:
