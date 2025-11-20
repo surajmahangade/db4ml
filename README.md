@@ -158,10 +158,18 @@ docker exec -it pg16devrun bash -lc "cd /src/db4ml && make clean && make"
 docker exec -it -u 0 pg16devrun bash -lc "cd /src/db4ml && make install"
 # restart to ensure a fresh backend loads the new .so
 docker restart pg16devrun
+
+# Update and install the PL/Python extension binary for Postgres 16
+docker exec -it -u 0 pg16devrun bash -c "apt-get update && apt-get install -y postgresql-plpython3-16 python3-pip"
+
+# Install the Python libraries your code actually uses
+docker exec -it -u 0 pg16devrun bash -c "pip3 install pandas scikit-learn --break-system-packages"
+
 ```
 
 When you **edit only SQL objects** and not C symbols, a full restart is not required:
 ```bash
+docker exec -it pg16devrun psql -U dev -d dev -c "CREATE EXTENSION IF NOT EXISTS plpython3u;"
 docker exec -it pg16devrun psql -U dev -d dev -c "DROP EXTENSION IF EXISTS db4ml CASCADE; CREATE EXTENSION db4ml;"
 ```
 
