@@ -153,16 +153,16 @@ SELECT db4ml.predict_linear(<id>, ARRAY[10.0, 5.0]::float8[]) AS y_hat;
 When you **edit C code** (`db4ml.c`):
 ```bash
 # rebuild
-docker exec -it pg16dev bash -lc "cd /src/db4ml && make clean && make"
+docker exec -it pg16devrun bash -lc "cd /src/db4ml && make clean && make"
 # reinstall as root
-docker exec -it -u 0 pg16dev bash -lc "cd /src/db4ml && make install"
+docker exec -it -u 0 pg16devrun bash -lc "cd /src/db4ml && make install"
 # restart to ensure a fresh backend loads the new .so
-docker restart pg16dev
+docker restart pg16devrun
 ```
 
 When you **edit only SQL objects** and not C symbols, a full restart is not required:
 ```bash
-docker exec -it pg16dev psql -U dev -d dev -c "DROP EXTENSION IF EXISTS db4ml CASCADE; CREATE EXTENSION db4ml;"
+docker exec -it pg16devrun psql -U dev -d dev -c "DROP EXTENSION IF EXISTS db4ml CASCADE; CREATE EXTENSION db4ml;"
 ```
 
 ---
