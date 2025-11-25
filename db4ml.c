@@ -63,30 +63,37 @@ void db4ml_worker_main(Datum main_arg) {
     /* We are done. The process will exit now. */
     proc_exit(0);
 }
-
 /*
  * FRONTEND FUNCTION
- * User calls this: SELECT db4ml.train_async('SELECT * FROM iris', 'species');
+ * User calls this: SELECT db4ml.train_async(sql_query, target_col, algo_name);
  */
 Datum db4ml_launch_training(PG_FUNCTION_ARGS) {
     text *sql_query_txt = PG_GETARG_TEXT_PP(0);
     text *target_col_txt = PG_GETARG_TEXT_PP(1);
+    // NEW: Retrieve the third argument
+    text *algo_name_txt = PG_GETARG_TEXT_PP(2); 
+    
     char *sql_query = text_to_cstring(sql_query_txt);
     char *target_col = text_to_cstring(target_col_txt);
+    // NEW: Convert the third argument to C string
+    char *algo_name = text_to_cstring(algo_name_txt); 
+    
     int64 job_id = 0;
 
     /* 1. Insert the job into db4ml.jobs to get an ID */
     SPI_connect();
     
-    char insert_sql[1024];
-    /* Using prepared statement args would be safer for production, simplified here */
-    /* Note: quote_literal_cstr is internal, relying on SPI_execute_with_args is better */
+    // UPDATED: Include 'algo_name' in the column list and '$3' in the values list
+    const char *cmd = "INSERT INTO db4ml.jobs(sql_query, target_column, algo_name) VALUES($1, $2, $3) RETURNING id";
     
-    const char *cmd = "INSERT INTO db4ml.jobs(sql_query, target_column) VALUES($1, $2) RETURNING id";
-    Oid argtypes[2] = { TEXTOID, TEXTOID };
-    Datum values[2] = { CStringGetTextDatum(sql_query), CStringGetTextDatum(target_col) };
+    // UPDATED: Array size increased to 3
+    Oid argtypes[3] = { TEXTOID, TEXTOID, TEXTOID }; 
     
-    if (SPI_execute_with_args(cmd, 2, argtypes, values, NULL, false, 1) != SPI_OK_INSERT_RETURNING) {
+    // UPDATED: Array size increased to 3, adding the third argument
+    Datum values[3] = { CStringGetTextDatum(sql_query), CStringGetTextDatum(target_col), CStringGetTextDatum(algo_name) }; 
+    
+    // UPDATED: Argument count increased from 2 to 3
+    if (SPI_execute_with_args(cmd, 3, argtypes, values, NULL, false, 1) != SPI_OK_INSERT_RETURNING) { 
         SPI_finish();
         ereport(ERROR, (errmsg("Failed to insert job into queue")));
     }
@@ -111,8 +118,8 @@ Datum db4ml_launch_training(PG_FUNCTION_ARGS) {
     snprintf(worker.bgw_name, BGW_MAXLEN, "db4ml worker job %ld", job_id);
     
     /* PASS ARGUMENTS:
-       bgw_main_arg: The Job ID (int32)
-       bgw_extra: The Database Name (string) - Essential so worker connects to correct DB
+        bgw_main_arg: The Job ID (int32)
+        bgw_extra: The Database Name (string) - Essential so worker connects to correct DB
     */
     worker.bgw_main_arg = Int32GetDatum((int32)job_id);
     
