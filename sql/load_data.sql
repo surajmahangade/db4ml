@@ -27,6 +27,29 @@ CREATE TABLE salary_data (
     salary double precision     -- in dollars
 );
 
+-- Create Credit Card Customer Segmentation table
+CREATE TABLE credit_card_data (
+    cust_id TEXT,                        -- Customer ID (Categorical, not for clustering)
+    balance DOUBLE PRECISION,            -- Balance amount left in their account
+    balance_frequency DOUBLE PRECISION,  -- How frequently the Balance is updated
+    purchases DOUBLE PRECISION,          -- Amount of purchases made
+    oneoff_purchases DOUBLE PRECISION,   -- Max purchase amount done in one-go
+    installments_purchases DOUBLE PRECISION, -- Amount of purchase done in installment
+    cash_advance DOUBLE PRECISION,       -- Cash in advance given by the user
+    purchases_frequency DOUBLE PRECISION,
+    oneoff_purchases_frequency DOUBLE PRECISION,
+    purchases_installments_frequency DOUBLE PRECISION,
+    cash_advance_frequency DOUBLE PRECISION,
+    cash_advance_trx INT,                -- Number of Transactions with Cash in Advance
+    purchases_trx INT,                   -- Number of purchase transactions made
+    credit_limit DOUBLE PRECISION,       -- Limit of Credit Card for user
+    payments DOUBLE PRECISION,           -- Amount of Payment done by user
+    minimum_payments DOUBLE PRECISION,   -- Minimum amount of payments made by user
+    prc_full_payment DOUBLE PRECISION,   -- Percent of full payment paid by user
+    tenure INT                           -- Tenure of credit card service for user
+);
+
+
 -- Create Mobile Price Classification table (from Kaggle 'train.csv')
 -- Note: 'price_range' is the classification target (0, 1, 2, or 3)
 CREATE TABLE mobile_price_data (
@@ -61,6 +84,21 @@ CREATE TABLE iris_data (
     petal_width double precision,
     species text -- Target: e.g., 'Iris-setosa'
 );
+
+
+\echo '=== Loading Credit Card Data ==='
+
+-- Load Credit Card data from its training CSV
+COPY credit_card_data(
+    cust_id, balance, balance_frequency, purchases, oneoff_purchases, 
+    installments_purchases, cash_advance, purchases_frequency, oneoff_purchases_frequency, 
+    purchases_installments_frequency, cash_advance_frequency, cash_advance_trx, 
+    purchases_trx, credit_limit, payments, minimum_payments, prc_full_payment, tenure
+)
+FROM '/src/db4ml/dataset/credit_card.csv' -- **Update filename as needed**
+DELIMITER ','
+CSV HEADER;
+
 
 \echo '=== Loading Housing Data ==='
 
@@ -130,5 +168,9 @@ SELECT battery_power, ram, price_range FROM mobile_price_data LIMIT 5;
 
 \echo '\n--- Iris Data Sample ---'
 SELECT * FROM iris_data LIMIT 5;
+
+SELECT 'Credit Card rows:' AS dataset, COUNT(*)::text AS count FROM credit_card_data;
+
+SELECT balance, purchases, credit_limit FROM credit_card_data LIMIT 5;
 
 \echo '\n=== Data Loading Complete ==='
