@@ -1,0 +1,5 @@
+paths in sklearn git
+
+sklearn/datasets/_base.py
+sklearn/datasets/__init__.py
+sklearn/linear_model/_stochastic_gradient.py
