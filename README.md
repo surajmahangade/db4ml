@@ -4,12 +4,6 @@ This repo shows how to build and use a PostgreSQL C extension (`db4ml`) using PG
 **v0.2** adds: training from an arbitrary `SELECT` (last column = target `y`, others = features `X`),
 a persistent model registry, and a `metrics` table with R².
 
-It provides:
-- `db4ml.train_linear(train_sql text, test_ratio double precision DEFAULT 0.2, params jsonb DEFAULT '{}'::jsonb) RETURNS bigint`
-- `db4ml.predict_linear(model_id bigint, features double precision[]) RETURNS double precision`
-
-> Contract for training query: the `SELECT` **must return only `double precision` columns**. Columns 1..M-1 are features, column M is the target.
-
 ---
 
 ## Prerequisites
@@ -71,7 +65,8 @@ When you **edit only SQL objects** and not C symbols, a full restart is not requ
 ```bash
 docker exec -it pg16dev psql -U dev -d dev -c "CREATE EXTENSION IF NOT EXISTS plpython3u;"
 docker exec -it pg16dev psql -U dev -d dev -c "DROP EXTENSION IF EXISTS db4ml CASCADE; CREATE EXTENSION db4ml;"
-
+docker exec -it pg16dev psql -U dev -d dev -f /src/db4ml/sql/load_data.sql
 docker exec -it pg16dev psql -U dev -d dev -f /src/db4ml/sql/test_models.sql
+docker exec -it pg16dev psql -U dev -d dev -f /src/db4ml/sql/outlier.sql
 
 ```
